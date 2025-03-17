@@ -1,0 +1,26 @@
+name: Ubuntu RDP via GitHub Actions
+
+on:  
+  push:  
+  workflow_dispatch:  
+
+jobs:
+  build:
+    runs-on: ubuntu-latest  
+    steps:
+      - name: Install Desktop Environment & RDP
+        run: |
+          sudo apt update && sudo apt install -y xfce4 xfce4-goodies xrdp
+          sudo systemctl enable xrdp
+          sudo systemctl start xrdp
+          echo "xfce4-session" > ~/.xsession
+          sudo useradd -m ubuntuRDP && echo 'ubuntuRDP:Pass1234' | sudo chpasswd
+          sudo usermod -aG sudo ubuntuRDP
+
+      - name: Install & Run Ngrok
+        run: |
+          curl -s https://ngrok-agent.s3.amazonaws.com/ngrok.asc | sudo tee /etc/apt/trusted.gpg.d/ngrok.asc > /dev/null
+          echo "deb https://ngrok-agent.s3.amazonaws.com/ buster main" | sudo tee /etc/apt/sources.list.d/ngrok.list
+          sudo apt update && sudo apt install -y ngrok
+          ngrok authtoken 2uSM0Xxu00jZOLhg4sABAqi0nI4_5CAJWqp65kpJv8HCFc7jV
+          ngrok tcp 3389
